@@ -173,16 +173,6 @@ const Login = () => {
               )}
             </button>
           </div>
-
-          {/* Demo Accounts */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Tài khoản demo:</h3>
-            <div className="space-y-1 text-xs text-gray-600">
-              <p><strong>Admin:</strong> admin / admin123</p>
-              <p><strong>Manager:</strong> manager / manager123</p>
-              <p><strong>Staff:</strong> staff / staff123</p>
-            </div>
-          </div>
         </form>
       </div>
     </div>

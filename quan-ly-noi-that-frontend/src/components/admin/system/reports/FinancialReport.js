@@ -10,9 +10,7 @@ import {
   IoStatsChart
 } from 'react-icons/io5';
 import {
-  LineChart,
   Line,
-  AreaChart,
   Area,
   BarChart,
   Bar,
@@ -29,16 +27,26 @@ import {
 } from 'recharts';
 import api from '../../../../api';
 
-const FinancialReport = () => {
+const FinancialReport = ({ startDate: propStartDate, endDate: propEndDate }) => {
   const [loading, setLoading] = useState(false);
+  
+  // Use props if provided, otherwise use default dates
   const [startDate, setStartDate] = useState(() => {
+    if (propStartDate) return propStartDate;
     const date = new Date();
     date.setDate(date.getDate() - 30); // 30 ngày trước
     return date.toISOString().split('T')[0];
   });
   const [endDate, setEndDate] = useState(() => {
+    if (propEndDate) return propEndDate;
     return new Date().toISOString().split('T')[0];
   });
+  
+  // Update local state when props change
+  useEffect(() => {
+    if (propStartDate) setStartDate(propStartDate);
+    if (propEndDate) setEndDate(propEndDate);
+  }, [propStartDate, propEndDate]);
 
   // Data states
   const [summary, setSummary] = useState(null);
@@ -50,7 +58,7 @@ const FinancialReport = () => {
   useEffect(() => {
     fetchReportData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startDate, endDate]);
 
   const fetchReportData = async () => {
     setLoading(true);

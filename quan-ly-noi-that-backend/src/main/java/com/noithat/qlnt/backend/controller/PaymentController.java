@@ -90,8 +90,23 @@ public class PaymentController {
     public String paymentReturn(@RequestParam Map<String, String> params) {
         String responseCode = params.get("vnp_ResponseCode");
         String orderInfo = params.get("vnp_OrderInfo");
-        if ("00".equals(responseCode)) {
-            return "Thanh toán thành công cho đơn hàng: " + orderInfo;
+        String sevqr = params.get("SEVQR");
+        // Extract order ID from orderInfo (assume format: "Thanh toan don hang: <id>")
+        Integer maDonHang = null;
+        if (orderInfo != null && orderInfo.contains(":")) {
+            try {
+                String[] parts = orderInfo.split(":");
+                maDonHang = Integer.parseInt(parts[1].trim());
+            } catch (Exception e) { maDonHang = null; }
+        }
+        if ("00".equals(responseCode) && sevqr != null && maDonHang != null) {
+            // Update order status to HOAN_THANH
+            donHangRepository.findById(maDonHang).ifPresent(dh -> {
+                dh.setTrangThaiDonHang("HOAN_THANH");
+                dh.setTrangThaiThanhToan("PAID");
+                donHangRepository.save(dh);
+            });
+            return "Thanh toán thành công cho đơn hàng: " + orderInfo + " (SEVQR)";
         } else {
             return "Thanh toán thất bại. Mã lỗi: " + responseCode;
         }

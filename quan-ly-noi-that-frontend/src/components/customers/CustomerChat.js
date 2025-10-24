@@ -308,6 +308,22 @@ const CustomerChat = () => {
     }
   };
 
+  // Auto-start helpers: start a chat session when the user focuses or types in the input box
+  const isGuestInfoValid = () => {
+    if (user) return true;
+    const hasName = guestName.trim().length > 0;
+    const hasContact = guestPhone.trim().length > 0 || guestEmail.trim().length > 0;
+    return hasName && hasContact;
+  };
+
+  const ensureStartedOnFocus = async () => {
+    if (chatStatus === 'idle' && (user || isGuestInfoValid())) {
+      try {
+        await startChat();
+      } catch (_) {}
+    }
+  };
+
   const handleCustomerCloseSession = async () => {
     if (!sessionId) return;
     try {
@@ -543,6 +559,7 @@ const CustomerChat = () => {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
+                onFocus={ensureStartedOnFocus}
                 placeholder="Nhập tin nhắn của bạn..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 rows={2}

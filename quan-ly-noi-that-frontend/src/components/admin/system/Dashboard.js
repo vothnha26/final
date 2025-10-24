@@ -21,12 +21,6 @@ const Dashboard = () => {
       color: 'bg-green-100 text-green-800',
     },
     {
-      id: 'inventory',
-      title: 'Tồn kho',
-      icon: IoStorefront,
-      color: 'bg-yellow-100 text-yellow-800',
-    },
-    {
       id: 'customers',
       title: 'Khách hàng',
       icon: IoPeople,
@@ -35,7 +29,7 @@ const Dashboard = () => {
   ], []);
 
   const quickActions = useMemo(() => [
-    { title: 'Tạo đơn hàng mới', icon: IoCheckmarkCircle, color: 'bg-green-600', action: 'route', route: '/admin/orders' },
+    { title: 'Tạo sản phẩm', icon: IoCheckmarkCircle, color: 'bg-green-600', action: 'route', route: '/admin/products' },
     { title: 'Quản lý tài khoản', icon: IoPeople, color: 'bg-cyan-600', action: 'route', route: '/admin/accounts' },
     { title: 'Thêm khách hàng', icon: IoPeople, color: 'bg-purple-600', action: 'route', route: '/admin/customers' },
     { title: 'Tạo khuyến mãi', icon: IoCalendar, color: 'bg-orange-600', action: 'route', route: '/admin/promotions' }
@@ -46,7 +40,6 @@ const Dashboard = () => {
   // Dashboard data states
   const [overviewData, setOverviewData] = useState(null);
   const [salesData, setSalesData] = useState(null);
-  const [inventoryData, setInventoryData] = useState(null);
   const [customersData, setCustomersData] = useState(null);
   const [recentActivities, setRecentActivities] = useState([]);
   const [performanceMetrics, setPerformanceMetrics] = useState(null);
@@ -83,12 +76,6 @@ const Dashboard = () => {
         const revenueTrendResp = await api.get('/api/v1/bao-cao-thong-ke/revenue-trend');
         if (revenueTrendResp && revenueTrendResp.success && revenueTrendResp.data) {
           setSalesData(revenueTrendResp.data.rows || []);
-        }
-
-        const salesByProductResp = await api.get('/api/v1/bao-cao-thong-ke/sales-by-product');
-        if (salesByProductResp && salesByProductResp.success && salesByProductResp.data) {
-          // map to simple list for UI
-          setInventoryData(salesByProductResp.data.rows || []);
         }
 
         const customerMetricsResp = await api.get('/api/v1/bao-cao-thong-ke/customer-metrics');
@@ -304,23 +291,6 @@ const Dashboard = () => {
                   { label: 'Tỉ lệ chuyển đổi', value: '—' },
                   { label: 'Giá trị trung bình', value: '—' }
                 ])).map((item, idx) => (
-                  <div key={idx} className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium text-gray-600">{item.label}</h4>
-                      <IoBarChart className="w-4 h-4 text-gray-400" />
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900">{item.value}</p>
-                  </div>
-                ))
-              )}
-
-              {selectedWidget === 'inventory' && (
-                normalizeMetrics(inventoryData, [
-                  { label: 'Tổng tồn', value: '—' },
-                  { label: 'Sắp hết', value: '—' },
-                  { label: 'Hết hàng', value: '—' },
-                  { label: 'Giá trị tồn', value: '—' }
-                ]).map((item, idx) => (
                   <div key={idx} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-sm font-medium text-gray-600">{item.label}</h4>

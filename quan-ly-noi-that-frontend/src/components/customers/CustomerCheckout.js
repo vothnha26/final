@@ -630,23 +630,18 @@ const CustomerCheckout = ({ onBack, onOrderComplete }) => {
     setStep(step - 1);
   };
 
-  const handlePlaceOrder = async () => {
+  // Xử lý thanh toán VNPay/SEPay cho Ví điện tử
+  const handleVNPayPayment = async () => {
     setIsProcessing(true);
-
     try {
-      // Helper function to get configKeyShip based on shipping method
       const getConfigKeyShip = () => {
-        // Nếu là giao hàng nhanh/same-day => SHIPPING_FEE_EXPRESS
         if (shippingMethod === 'express' || shippingMethod === 'same-day') {
           return 'SHIPPING_FEE_EXPRESS';
         }
-        // Mặc định là giao hàng tiêu chuẩn => SHIPPING_FEE_STANDARD
         return 'SHIPPING_FEE_STANDARD';
       };
-
-      // Build payload according to ThongTinGiaoHangRequest
       const payload = {
-        maKhachHang: customerInfo.maKhachHang || customerInfo.ma_khach_hang, // Support both formats
+        maKhachHang: customerInfo.maKhachHang || customerInfo.ma_khach_hang,
         phuongThucThanhToan: paymentMethod,
         chiTietDonHangList: cartItems.map(i => ({ maBienThe: i.variantId ?? i.id, soLuong: i.quantity })),
         tenNguoiNhan: shippingInfo.fullName,
@@ -654,22 +649,77 @@ const CustomerCheckout = ({ onBack, onOrderComplete }) => {
         diaChiGiaoHang: `${shippingInfo.address}${shippingInfo.ward ? ', ' + shippingInfo.ward : ''}${shippingInfo.district ? ', ' + shippingInfo.district : ''}${shippingInfo.city ? ', ' + shippingInfo.city : ''}`,
         ghiChu: shippingInfo.note || '',
         phuongThucGiaoHang: (() => {
-          // If we have shippingOptions (from backend), send the human-readable name
           if (shippingOptions && shippingOptions.length > 0) {
             const sel = shippingOptions.find(opt => String(opt.maDichVu) === String(shippingMethod) || String(opt.maDichVu) === String(Number(shippingMethod)));
             if (sel) return sel.tenDichVu || sel.tenDichVu;
           }
-          // fallback mapping
           if (shippingMethod === 'express' || shippingMethod === 'same-day') return 'Giao hàng nhanh';
           if (shippingMethod === 'standard') return 'Giao hàng tiêu chuẩn';
           return String(shippingMethod || 'Giao hàng tiêu chuẩn');
         })(),
         maVoucherCode: selectedVoucher?.code || selectedVoucher?.maCode || null,
         diemThuongSuDung: appliedLoyaltyPoints || 0,
-        configKeyShip: getConfigKeyShip() // Thêm config key cho phí ship
+        configKeyShip: getConfigKeyShip()
       };
+      // Gọi API backend để lấy URL thanh toán VNPay/SEPay
+      const resp = await api.post('/api/thanhtoan/vnpay-url', payload);
+      if (resp && resp.url) {
+        // Lưu shipping info trước khi chuyển hướng
+        localStorage.setItem('customerShippingInfo', JSON.stringify(shippingInfo));
+        // Chuyển hướng sang trang thanh toán VNPay/SEPay
+        window.location.href = resp.url;
+      } else {
+        showToast(resp?.message || 'Không lấy được URL thanh toán ví điện tử', 'error');
+      }
+    } catch (err) {
+      let serverMsg = null;
+      if (err) {
+        if (err?.data && typeof err.data === 'object') {
+          serverMsg = err.data.message || err.data.detail || err.data.error || JSON.stringify(err.data);
+        } else if (typeof err === 'object') {
+          serverMsg = err.message || String(err);
+        } else {
+          serverMsg = String(err);
+        }
+      }
+      const msg = serverMsg || 'Có lỗi xảy ra khi tạo đơn hàng ví điện tử, vui lòng thử lại';
+      showToast(msg, 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
-      // Try both variants (without and with trailing slash) to avoid server redirect issues
+  // Đặt hàng bình thường (COD, card, bank)
+  const handlePlaceOrder = async () => {
+    setIsProcessing(true);
+    try {
+      const getConfigKeyShip = () => {
+        if (shippingMethod === 'express' || shippingMethod === 'same-day') {
+          return 'SHIPPING_FEE_EXPRESS';
+        }
+        return 'SHIPPING_FEE_STANDARD';
+      };
+      const payload = {
+        maKhachHang: customerInfo.maKhachHang || customerInfo.ma_khach_hang,
+        phuongThucThanhToan: paymentMethod,
+        chiTietDonHangList: cartItems.map(i => ({ maBienThe: i.variantId ?? i.id, soLuong: i.quantity })),
+        tenNguoiNhan: shippingInfo.fullName,
+        soDienThoaiNhan: shippingInfo.phone,
+        diaChiGiaoHang: `${shippingInfo.address}${shippingInfo.ward ? ', ' + shippingInfo.ward : ''}${shippingInfo.district ? ', ' + shippingInfo.district : ''}${shippingInfo.city ? ', ' + shippingInfo.city : ''}`,
+        ghiChu: shippingInfo.note || '',
+        phuongThucGiaoHang: (() => {
+          if (shippingOptions && shippingOptions.length > 0) {
+            const sel = shippingOptions.find(opt => (String(opt.maDichVu) === String(shippingMethod) || String(opt.maDichVu) === String(Number(shippingMethod))));
+            if (sel) return sel.tenDichVu || sel.tenDichVu;
+          }
+          if (shippingMethod === 'express' || shippingMethod === 'same-day') return 'Giao hàng nhanh';
+          if (shippingMethod === 'standard') return 'Giao hàng tiêu chuẩn';
+          return String(shippingMethod || 'Giao hàng tiêu chuẩn');
+        })(),
+        maVoucherCode: selectedVoucher?.code || selectedVoucher?.maCode || null,
+        diemThuongSuDung: appliedLoyaltyPoints || 0,
+        configKeyShip: getConfigKeyShip()
+      };
       let resp = null;
       const endpointsToTry = ['/api/thanhtoan/tao-don-hang', '/api/thanhtoan/tao-don-hang'];
       let lastErr = null;
@@ -684,9 +734,6 @@ const CustomerCheckout = ({ onBack, onOrderComplete }) => {
         }
       }
       if (!resp && lastErr) throw lastErr;
-      
-      // Map response từ stored procedure (sp_GetCheckoutSummary)
-      // Backend trả về: TamTinh, GiamGiaVip, GiamGiaVoucher, GiamGiaDiem, PhiGiaoHang, TongCong, DiemThuongNhanDuoc
       const orderSummary = {
         tamTinh: Number(resp?.TamTinh ?? resp?.tamTinh ?? 0),
         giamGiaVip: Number(resp?.GiamGiaVip ?? resp?.giamGiaVip ?? 0),
@@ -698,29 +745,18 @@ const CustomerCheckout = ({ onBack, onOrderComplete }) => {
         maDonHang: resp?.maDonHang ?? resp?.MaDonHang ?? null,
         maDonHangStr: resp?.maDonHangStr ?? resp?.MaDonHangStr ?? null
       };
-      
-      // save server response and order summary so success screen can show authoritative values
       setLastOrderResponse(orderSummary);
-
-      // Save shipping info for future use
       localStorage.setItem('customerShippingInfo', JSON.stringify(shippingInfo));
-
-      // maDonHang may be numeric or string depending on backend; use it as identifier
       const returnedOrderCode = orderSummary.maDonHangStr ?? orderSummary.maDonHang ?? ('DH' + Date.now().toString().slice(-6));
       setOrderCode(returnedOrderCode);
       setOrderSuccess(true);
       setStep(4);
       showToast('Đặt hàng thành công!');
-
-      // Call callback
       if (onOrderComplete) {
         setTimeout(() => onOrderComplete(), 1000);
       }
-
       try { clearCart(); } catch (e) { /* ignore */ }
-
     } catch (err) {
-      // Try to extract a friendly server message. Backend often returns { success:false, message: '...' }
       let serverMsg = null;
       if (err) {
         if (err?.data && typeof err.data === 'object') {
@@ -731,7 +767,6 @@ const CustomerCheckout = ({ onBack, onOrderComplete }) => {
           serverMsg = String(err);
         }
       }
-
       const msg = serverMsg || 'Có lỗi xảy ra khi tạo đơn hàng, vui lòng thử lại';
       showToast(msg, 'error');
     } finally {
@@ -1535,23 +1570,43 @@ const CustomerCheckout = ({ onBack, onOrderComplete }) => {
                     {step === 1 ? 'Tiếp tục' : step === 2 ? 'Chọn thanh toán' : 'Đặt hàng'}
                   </button>
                 ) : (
-                  <button
-                    onClick={() => setShowConfirmDialog(true)}
-                    disabled={isProcessing || cartItems.length === 0}
-                    className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        Đang xử lý...
-                      </>
-                    ) : (
-                      <>
-                        <IoCheckmarkCircleOutline />
-                        Xác nhận đặt hàng
-                      </>
-                    )}
-                  </button>
+                  paymentMethod === 'wallet' ? (
+                    <button
+                      onClick={handleVNPayPayment}
+                      disabled={isProcessing || cartItems.length === 0}
+                      className="w-full bg-orange-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          Đang chuyển hướng ví điện tử...
+                        </>
+                      ) : (
+                        <>
+                          <IoWalletOutline />
+                          Thanh toán qua Ví điện tử
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setShowConfirmDialog(true)}
+                      disabled={isProcessing || cartItems.length === 0}
+                      className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          Đang xử lý...
+                        </>
+                      ) : (
+                        <>
+                          <IoCheckmarkCircleOutline />
+                          Xác nhận đặt hàng
+                        </>
+                      )}
+                    </button>
+                  )
                 )}
 
                 {step > 1 && (

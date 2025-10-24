@@ -1483,15 +1483,32 @@ const DiscountManagement = () => {
 
                       return variants.map(variant => {
                         const inSelected = selectedProductVariantIds.includes(variant.maBienThe);
+                        // Check if variant is already assigned to any other discount program (not just current)
+                        const assignedToOtherDiscount = discountPrograms.some(program =>
+                          program.bienTheGiamGias && program.bienTheGiamGias.some(bt => bt.maBienThe === variant.maBienThe)
+                        );
                         const includedInProgram = variantDiscounts.some(vd => vd.maBienThe === variant.maBienThe);
                         return (
                           <div key={variant.maBienThe} className={`flex items-center justify-between p-2 border rounded ${includedInProgram ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'}`}>
                             <div className="flex items-center gap-3">
-                              <input type="checkbox" checked={inSelected} onChange={() => {
-                                setSelectedProductVariantIds(prev => prev.includes(variant.maBienThe) ? prev.filter(x => x !== variant.maBienThe) : [...prev, variant.maBienThe]);
-                              }} />
+                              <input
+                                type="checkbox"
+                                checked={inSelected}
+                                onChange={() => {
+                                  setSelectedProductVariantIds(prev => prev.includes(variant.maBienThe) ? prev.filter(x => x !== variant.maBienThe) : [...prev, variant.maBienThe]);
+                                }}
+                                disabled={assignedToOtherDiscount}
+                              />
                               <div>
-                                <div className="font-medium text-sm">{variant.sku || variant.thuocTinh || `Biến thể #${variant.maBienThe}`}</div>
+                                <div
+                                  className={`font-medium text-sm ${assignedToOtherDiscount ? 'line-through text-gray-400' : ''}`}
+                                  title={assignedToOtherDiscount ? 'Biến thể này đã nằm trong chương trình giảm giá khác' : ''}
+                                >
+                                  {variant.sku || variant.thuocTinh || `Biến thể #${variant.maBienThe}`}
+                                  {assignedToOtherDiscount && (
+                                    <span className="ml-2 text-xs text-gray-400">(Đã nằm trong CT giảm giá khác)</span>
+                                  )}
+                                </div>
                                 <div className="text-xs text-gray-500">Mã: {variant.maBienThe}</div>
                               </div>
                             </div>

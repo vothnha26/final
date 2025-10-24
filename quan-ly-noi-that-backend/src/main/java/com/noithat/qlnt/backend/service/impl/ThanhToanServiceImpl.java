@@ -462,4 +462,9 @@ public class ThanhToanServiceImpl implements ThanhToanService {
         }
         return response;
     }
+
+    @Override
+    public DonHang getDonHangById(Integer maDonHang) {
+        return donHangRepository.findById(maDonHang).orElse(null);
+    }
 }

@@ -4,11 +4,8 @@ import api from '../../../api';
 import OverviewReport from './reports/OverviewReport';
 import SalesReport from './reports/SalesReport';
 import CustomersReport from './reports/CustomersReport';
-import InventoryReport from './reports/InventoryReport';
 import ProductsReport from './reports/ProductsReport';
 import FinancialReport from './reports/FinancialReport';
-import MarketingReport from './reports/MarketingReport';
-import PerformanceReport from './reports/PerformanceReport';
 import RFMAnalysis from './reports/RFMAnalysis';
 import CohortRetention from './reports/CohortRetention';
 import VoucherUsageChart from './reports/VoucherUsageChart';
@@ -265,12 +262,9 @@ const ReportsAnalytics = () => {
   const reportTypes = [
     { id: 'overview', name: 'Tổng quan', icon: IoBarChart, color: 'bg-blue-100 text-blue-800' },
     { id: 'sales', name: 'Báo cáo bán hàng', icon: IoBarChart, color: 'bg-green-100 text-green-800' },
-    { id: 'inventory', name: 'Báo cáo tồn kho', icon: IoBarChart, color: 'bg-yellow-100 text-yellow-800' },
     { id: 'customers', name: 'Báo cáo khách hàng', icon: IoBarChart, color: 'bg-purple-100 text-purple-800' },
     { id: 'products', name: 'Báo cáo sản phẩm', icon: IoBarChart, color: 'bg-red-100 text-red-800' },
-    { id: 'financial', name: 'Báo cáo tài chính', icon: IoBarChart, color: 'bg-indigo-100 text-indigo-800' },
-    { id: 'marketing', name: 'Báo cáo marketing', icon: IoBarChart, color: 'bg-pink-100 text-pink-800' },
-    { id: 'performance', name: 'Báo cáo hiệu suất', icon: IoBarChart, color: 'bg-gray-100 text-gray-800' }
+    { id: 'financial', name: 'Báo cáo tài chính', icon: IoBarChart, color: 'bg-indigo-100 text-indigo-800' }
   ];
 
   const computedTotalRevenue = salesData.reduce((sum, day) => sum + (Number(day.doanhThu ?? day.revenue) || 0), 0);
@@ -538,11 +532,13 @@ const ReportsAnalytics = () => {
           </>
         )}
 
-        {selectedReportType === 'inventory' && <InventoryReport />}
         {selectedReportType === 'products' && <ProductsReport />}
-        {selectedReportType === 'financial' && <FinancialReport />}
-        {selectedReportType === 'marketing' && <MarketingReport />}
-        {selectedReportType === 'performance' && <PerformanceReport />}
+        {selectedReportType === 'financial' && (
+          <FinancialReport 
+            startDate={customStartDate} 
+            endDate={customEndDate} 
+          />
+        )}
 
         {/* Export Options */}
         <div className="bg-white rounded-lg shadow-sm p-6">

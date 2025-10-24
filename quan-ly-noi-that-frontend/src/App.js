@@ -367,23 +367,23 @@ const App = () => {
             <Route path="/checkout/cancel" element={<ProtectedRoute><CustomerLayout><CustomerCheckout /></CustomerLayout></ProtectedRoute>} />
 
             {/* Customer Profile & Account */}
-            <Route path="/profile" element={<CustomerLayout><CustomerProfile /></CustomerLayout>} />
+            <Route path="/profile" element={<ProtectedRoute><CustomerLayout><CustomerProfile /></CustomerLayout></ProtectedRoute>} />
             <Route path="/account" element={<Navigate to="/profile" replace />} />
-            <Route path="/profile/edit" element={<CustomerLayout><CustomerProfile /></CustomerLayout>} />
-            <Route path="/profile/password" element={<CustomerLayout><CustomerProfile /></CustomerLayout>} />
-            <Route path="/profile/addresses" element={<CustomerLayout><CustomerProfile /></CustomerLayout>} />
-            <Route path="/profile/benefits" element={<CustomerLayout><CustomerBenefits /></CustomerLayout>} />
+            <Route path="/profile/edit" element={<ProtectedRoute><CustomerLayout><CustomerProfile /></CustomerLayout></ProtectedRoute>} />
+            <Route path="/profile/password" element={<ProtectedRoute><CustomerLayout><CustomerProfile /></CustomerLayout></ProtectedRoute>} />
+            <Route path="/profile/addresses" element={<ProtectedRoute><CustomerLayout><CustomerProfile /></CustomerLayout></ProtectedRoute>} />
+            <Route path="/profile/benefits" element={<ProtectedRoute><CustomerLayout><CustomerBenefits /></CustomerLayout></ProtectedRoute>} />
 
             {/* Additional customer pages */}
-            <Route path="/vouchers" element={<CustomerLayout><CustomerProfile /></CustomerLayout>} />
+            <Route path="/vouchers" element={<ProtectedRoute><CustomerLayout><CustomerProfile /></CustomerLayout></ProtectedRoute>} />
             <Route path="/benefits" element={<Navigate to="/profile/benefits" replace />} />
             <Route path="/promotions" element={<Navigate to="/profile/benefits" replace />} />
             <Route path="/points" element={<Navigate to="/profile/benefits" replace />} />
 
             {/* Customer Orders */}
-            <Route path="/orders" element={<CustomerLayout><CustomerOrders /></CustomerLayout>} />
-            <Route path="/orders/:id" element={<CustomerLayout><CustomerOrderTracking /></CustomerLayout>} />
-            <Route path="/orders/track/:id" element={<CustomerLayout><CustomerOrderTracking /></CustomerLayout>} />
+            <Route path="/orders" element={<ProtectedRoute><CustomerLayout><CustomerOrders /></CustomerLayout></ProtectedRoute>} />
+            <Route path="/orders/:id" element={<ProtectedRoute><CustomerLayout><CustomerOrderTracking /></CustomerLayout></ProtectedRoute>} />
+            <Route path="/orders/track/:id" element={<ProtectedRoute><CustomerLayout><CustomerOrderTracking /></CustomerLayout></ProtectedRoute>} />
             <Route path="/order-history" element={<Navigate to="/orders" replace />} />
 
             {/* Customer Favorites & Wishlist - require authentication */}
@@ -391,7 +391,7 @@ const App = () => {
             <Route path="/wishlist" element={<Navigate to="/favorites" replace />} />
 
             {/* Customer Notifications */}
-            <Route path="/notifications" element={<CustomerLayout><CustomerNotifications /></CustomerLayout>} />
+            <Route path="/notifications" element={<ProtectedRoute><CustomerLayout><CustomerNotifications /></CustomerLayout></ProtectedRoute>} />
 
 
             {/* ============================================

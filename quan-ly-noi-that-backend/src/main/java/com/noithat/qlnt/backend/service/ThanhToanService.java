@@ -6,7 +6,8 @@ import com.noithat.qlnt.backend.dto.request.ThanhToanRequest;
 import com.noithat.qlnt.backend.dto.request.ThemGiaoDichRequest;
 import com.noithat.qlnt.backend.dto.request.ThongTinGiaoHangRequest;
 import com.noithat.qlnt.backend.dto.response.*;
-import com.noithat.qlnt.backend.entity.Voucher; // Cần import entity Voucher
+import com.noithat.qlnt.backend.entity.Voucher;
+import com.noithat.qlnt.backend.entity.DonHang;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -66,4 +67,7 @@ public interface ThanhToanService {
     CheckoutSummaryResponse taoDonHangTuUser(ThongTinGiaoHangRequest request);
 
     ApplyVoucherResponse applyVoucher(ApplyVoucherRequest request);
+
+    /** Lấy đơn hàng theo ID (dùng cho VNPay URL creation). */
+    DonHang getDonHangById(Integer maDonHang);
 }
