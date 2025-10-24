@@ -13,6 +13,8 @@ public class ChiTietDonHangResponse {
     private String tenSanPham;
     private String sku;
     private int soLuong;
-    private BigDecimal donGia;
+    private BigDecimal donGia; // For backward compatibility (will be donGiaGoc)
+    private BigDecimal donGiaGoc; // Original price before discount
+    private BigDecimal donGiaThucTe; // Actual price after discount
     private BigDecimal thanhTien;
 }

@@ -71,6 +71,17 @@ const StaffNotificationPopup = ({ user }) => {
         }
       });
 
+      // Subscribe to STAFF/ALL notifications (for all staff members)
+      stompClient.subscribe('/topic/thong-bao/staff/all', (message) => {
+        try {
+          const notification = JSON.parse(message.body);
+          const normalized = normalizeNotifications([notification])[0];
+          setNotifications(prev => [normalized, ...prev]);
+        } catch (e) {
+          
+        }
+      });
+
       // Subscribe to STAFF notifications (if user has staff ID)
       if (user?.maNhanVien) {
   stompClient.subscribe(`/topic/thong-bao/staff/${user.maNhanVien}`, (message) => {
@@ -159,12 +170,13 @@ const StaffNotificationPopup = ({ user }) => {
   };
 
   const markAsRead = (id) => {
+    if (!id && id !== 0) return; // guard against invalid id
     api.put(`/api/v1/thong-bao/${id}/danh-dau-da-doc`).then(() => {
       setNotifications(notifications.map(notif =>
         notif.id === id ? { ...notif, read: true } : notif
       ));
-    }).catch(err => {
-      
+    }).catch(() => {
+      // ignore network errors for mark-as-read to avoid disrupting UX
     });
   };
 
@@ -187,7 +199,9 @@ const StaffNotificationPopup = ({ user }) => {
   };
 
   const handleNotificationClick = (notification) => {
-    markAsRead(notification.id);
+    if (notification?.id != null) {
+      markAsRead(notification.id);
+    }
     if (notification.action) {
       setIsOpen(false);
       navigate(notification.action);

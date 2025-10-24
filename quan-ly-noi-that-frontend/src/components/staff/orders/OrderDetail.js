@@ -39,7 +39,6 @@ const OrderDetail = () => {
     try {
       setLoading(true);
       const response = await api.get(`/api/banhang/donhang/${id}`);
-      console.log('Order response:', response); // Debug
 
       // Handle different response structures
       let orderData = response;
@@ -50,10 +49,8 @@ const OrderDetail = () => {
         orderData = response.result;
       }
 
-      console.log('Processed order data:', orderData); // Debug
       setOrder(orderData);
     } catch (error) {
-      console.error('Error fetching order detail:', error);
       showToast('Không thể tải thông tin đơn hàng', 'error');
     } finally {
       setLoading(false);
@@ -181,7 +178,6 @@ const OrderDetail = () => {
           showToast('Cập nhật trạng thái thành công', 'success');
         } catch (err) {
           // Fallback: call simpler endpoint if server returns 500 or unexpected error
-          console.error('[updateOrderStatus] validated endpoint failed:', err?.status, err?.data);
           if (err && err.status === 500) {
             await api.put(`/api/banhang/donhang/${id}/trangthai`, { trangThai: statusToSend });
             showToast('Cập nhật trạng thái thành công (dự phòng)', 'success');
@@ -193,7 +189,6 @@ const OrderDetail = () => {
       setShowStatusModal(false);
       await fetchOrderDetail();
     } catch (error) {
-      console.error('Error updating status:', error?.status, error?.data || error);
       const msg = (error && error.data && (error.data.message || error.data.error || (typeof error.data === 'string' ? error.data : ''))) || '';
       showToast(`Không thể cập nhật trạng thái${msg ? ': ' + msg : ''}`, 'error');
     } finally {
@@ -230,7 +225,6 @@ const OrderDetail = () => {
       setShowPaymentModal(false);
       await fetchOrderDetail();
     } catch (error) {
-      console.error('Error updating payment status:', error);
       showToast('Không thể cập nhật trạng thái thanh toán', 'error');
     } finally {
       setUpdatingPayment(false);

@@ -31,14 +31,16 @@ const Register = () => {
     setSuccess('');
 
     try {
-  const response = await api.post('/api/v1/auth/register', formData);
-      setSuccess(response);
+      const response = await api.post('/api/v1/auth/register', formData);
+      // response is a string success message per backend; normalize to string
+      setSuccess(typeof response === 'string' ? response : (response?.message || 'Đăng ký thành công.'));
       // Redirect to OTP verification page after successful registration
       setTimeout(() => {
         navigate('/verify-otp', { state: { email: formData.email } });
       }, 2000);
     } catch (err) {
-      setError(err.data?.message || err.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+      const serverMsg = typeof err?.data === 'string' ? err.data : err?.data?.message;
+      setError(serverMsg || err.message || 'Đăng ký thất bại. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -87,6 +89,7 @@ const Register = () => {
                   name="tenDangNhap"
                   type="text"
                   required
+                  autoComplete="username"
                   value={formData.tenDangNhap}
                   onChange={handleChange}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -109,6 +112,7 @@ const Register = () => {
                   name="email"
                   type="email"
                   required
+                  autoComplete="email"
                   value={formData.email}
                   onChange={handleChange}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -131,6 +135,7 @@ const Register = () => {
                   name="hoTen"
                   type="text"
                   required
+                  autoComplete="name"
                   value={formData.hoTen}
                   onChange={handleChange}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -153,6 +158,7 @@ const Register = () => {
                   name="soDienThoai"
                   type="tel"
                   required
+                  autoComplete="tel"
                   value={formData.soDienThoai}
                   onChange={handleChange}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -175,6 +181,7 @@ const Register = () => {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="new-password"
                   value={formData.password}
                   onChange={handleChange}
                   className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"

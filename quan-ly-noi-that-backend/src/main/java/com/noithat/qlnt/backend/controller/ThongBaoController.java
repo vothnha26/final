@@ -44,10 +44,19 @@ public class ThongBaoController {
     // ==================== WebSocket Endpoint ====================
     // Khi có thông báo mới, gửi tới khách hàng qua WebSocket
     public void sendNotificationToCustomer(Integer maKhachHang, ThongBaoResponse thongBao) {
+        // Chỉ gửi cho đúng người nhận (không broadcast ALL cho customer)
         if (maKhachHang != null) {
             messagingTemplate.convertAndSend("/topic/thong-bao/customer/" + maKhachHang, thongBao);
+        }
+    }
+
+    // Gửi thông báo tới staff qua WebSocket
+    public void sendNotificationToStaff(Integer maNhanVien, ThongBaoResponse thongBao) {
+        if (maNhanVien != null) {
+            messagingTemplate.convertAndSend("/topic/thong-bao/staff/" + maNhanVien, thongBao);
         } else {
-            messagingTemplate.convertAndSend("/topic/thong-bao/all", thongBao);
+            // Gửi cho tất cả staff
+            messagingTemplate.convertAndSend("/topic/thong-bao/staff/all", thongBao);
         }
     }
 
@@ -153,6 +162,15 @@ public class ThongBaoController {
             e.printStackTrace();
             return ResponseEntity.ok(List.of());
         }
+    }
+
+    /**
+     * GET /api/v1/thong-bao/admin/me
+     * Alias cho /staff/me - Admin cũng dùng endpoint này
+     */
+    @GetMapping("/admin/me")
+    public ResponseEntity<List<ThongBaoResponse>> getAdminNotifications(Principal principal) {
+        return getStaffNotifications(principal);
     }
 
     /**
@@ -282,16 +300,27 @@ public class ThongBaoController {
     public ResponseEntity<ThongBaoResponse> create(@Valid @RequestBody ThongBaoRequest request) {
         ThongBao thongBaoEntity = thongBaoService.create(request);
         ThongBaoResponse created = thongBaoService.getByIdWithResponse(thongBaoEntity.getMaThongBao());
-        // Lấy mã khách hàng từ entity nếu có
-        Integer maKhachHang = null;
-        if (thongBaoEntity.getKhachHang() != null) {
-            maKhachHang = thongBaoEntity.getKhachHang().getMaKhachHang();
-        }
-        if (maKhachHang != null) {
-            sendNotificationToCustomer(maKhachHang, created);
+        
+        // Gửi WebSocket notification dựa vào loại người nhận
+        String loaiNguoiNhan = thongBaoEntity.getLoaiNguoiNhan() != null ? thongBaoEntity.getLoaiNguoiNhan() : "ALL";
+        
+        if ("CUSTOMER".equals(loaiNguoiNhan)) {
+            // Chỉ gửi cho đúng customer ID, không gửi ALL
+            Integer nguoiNhanId = thongBaoEntity.getNguoiNhanId();
+            sendNotificationToCustomer(nguoiNhanId, created);
+        } else if ("STAFF".equals(loaiNguoiNhan)) {
+            // Gửi cho staff cụ thể hoặc tất cả staff
+            Integer nguoiNhanId = thongBaoEntity.getNguoiNhanId();
+            sendNotificationToStaff(nguoiNhanId, created);
+        } else if ("USER".equals(loaiNguoiNhan)) {
+            // Gửi cho user (admin/staff không phải customer)
+            sendNotificationToStaff(null, created);
         } else {
+            // ALL - gửi cho cả customer và staff
             sendNotificationToCustomer(null, created);
+            sendNotificationToStaff(null, created);
         }
+        
         return ResponseEntity.ok(created);
     }
 

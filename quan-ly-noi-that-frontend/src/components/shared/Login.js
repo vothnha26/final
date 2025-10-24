@@ -92,6 +92,7 @@ const Login = () => {
                   name="tenDangNhap"
                   type="text"
                   required
+                  autoComplete="username"
                   value={formData.tenDangNhap}
                   onChange={handleChange}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -114,6 +115,7 @@ const Login = () => {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={handleChange}
                   className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"

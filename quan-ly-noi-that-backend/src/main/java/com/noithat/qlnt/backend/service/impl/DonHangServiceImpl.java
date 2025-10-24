@@ -353,12 +353,19 @@ public class DonHangServiceImpl implements IDonHangService {
                         BienTheSanPham bienThe = ct.getBienThe();
                         SanPham sanPham = bienThe != null ? bienThe.getSanPham() : null;
 
+                        // Đảm bảo lấy đúng giá từ chi tiết đơn hàng
+                        BigDecimal donGiaGoc = ct.getDonGiaGoc() != null ? ct.getDonGiaGoc() : BigDecimal.ZERO;
+                        BigDecimal donGiaThucTe = ct.getDonGiaThucTe() != null ? ct.getDonGiaThucTe() : donGiaGoc;
+                        BigDecimal thanhTien = donGiaThucTe.multiply(BigDecimal.valueOf(ct.getSoLuong()));
+
                         return new ChiTietDonHangResponse(
                                 sanPham != null ? sanPham.getTenSanPham() : "N/A",
                                 bienThe != null ? bienThe.getSku() : "N/A",
                                 ct.getSoLuong(),
-                                ct.getDonGiaGoc(),
-                                ct.getDonGiaThucTe().multiply(BigDecimal.valueOf(ct.getSoLuong())));
+                                donGiaGoc, // donGia (for backward compatibility)
+                                donGiaGoc, // donGiaGoc - giá gốc
+                                donGiaThucTe, // donGiaThucTe - giá thực tế sau giảm
+                                thanhTien); // thành tiền = donGiaThucTe * soLuong
                     }).collect(Collectors.toList());
             response.setChiTietDonHangList(chiTietList);
         }

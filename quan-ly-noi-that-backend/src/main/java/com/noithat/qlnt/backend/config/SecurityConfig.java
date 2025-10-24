@@ -44,6 +44,9 @@ public class SecurityConfig {
                 // WebSocket SockJS handshake endpoints
                 .requestMatchers("/ws-notifications/**").permitAll()
 
+                // Allow public access to financial report endpoint
+                .requestMatchers("/api/v1/reports/financial").permitAll()
+
                 // 2. Admin-only routes
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
@@ -53,7 +56,10 @@ public class SecurityConfig {
                 // Backend API for staff dashboard
                 .requestMatchers("/api/v1/dashboard/staff").hasRole("STAFF")
 
-                // 4. All other requests require authentication
+                // 4. Reports - accessible by ADMIN and STAFF
+                .requestMatchers("/api/v1/reports/**").hasAnyRole("ADMIN", "STAFF")
+
+                // 5. All other requests require authentication
                 .anyRequest().authenticated()
             )
             // Use stateful sessions so backend manages authentication via HttpSession/cookie

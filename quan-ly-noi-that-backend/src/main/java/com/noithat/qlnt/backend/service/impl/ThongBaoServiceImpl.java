@@ -141,6 +141,11 @@ public class ThongBaoServiceImpl implements IThongBaoService {
                 List<ThongBao> result = thongBaoRepository.findByLoaiNguoiNhanAndNgayXoaIsNullOrderByNgayTaoDesc("ALL");
                 return result != null ? result : List.of();
             }
+            // Customer chỉ lấy thông báo đúng người nhận, không bao gồm ALL
+            if ("CUSTOMER".equalsIgnoreCase(loaiNguoiNhan)) {
+                List<ThongBao> result = thongBaoRepository.findByNguoiNhanIdAndNgayXoaIsNullOrderByNgayTaoDesc(nguoiNhanId);
+                return result != null ? result : List.of();
+            }
             List<ThongBao> result = thongBaoRepository.findNotificationsForUser(nguoiNhanId, loaiNguoiNhan);
             return result != null ? result : List.of();
         } catch (Exception e) {
@@ -176,13 +181,21 @@ public class ThongBaoServiceImpl implements IThongBaoService {
             loaiNguoiNhan = "ALL";
             nguoiNhanId = 0; // Dummy value
         }
-        int updated = thongBaoRepository.markAllAsReadForUser(nguoiNhanId, loaiNguoiNhan, LocalDateTime.now());
+        if ("CUSTOMER".equalsIgnoreCase(loaiNguoiNhan)) {
+            // Đánh dấu chỉ thông báo của đúng customer
+            thongBaoRepository.markAllAsReadForExactUser(nguoiNhanId, loaiNguoiNhan, LocalDateTime.now());
+        } else {
+            int updated = thongBaoRepository.markAllAsReadForUser(nguoiNhanId, loaiNguoiNhan, LocalDateTime.now());
+        }
     }
     
     @Override
     public long countChuaDoc(Integer nguoiNhanId, String loaiNguoiNhan) {
         if (nguoiNhanId == null) {
             return thongBaoRepository.countByLoaiNguoiNhanAndDaDocFalseAndNgayXoaIsNull("ALL");
+        }
+        if ("CUSTOMER".equalsIgnoreCase(loaiNguoiNhan)) {
+            return thongBaoRepository.countByNguoiNhanIdAndDaDocFalseAndNgayXoaIsNull(nguoiNhanId);
         }
         return thongBaoRepository.countUnreadForUser(nguoiNhanId, loaiNguoiNhan);
     }
@@ -194,6 +207,9 @@ public class ThongBaoServiceImpl implements IThongBaoService {
                     .stream()
                     .filter(tb -> !tb.getDaDoc())
                     .collect(Collectors.toList());
+        }
+        if ("CUSTOMER".equalsIgnoreCase(loaiNguoiNhan)) {
+            return thongBaoRepository.findByNguoiNhanIdAndDaDocFalseAndNgayXoaIsNullOrderByNgayTaoDesc(nguoiNhanId);
         }
         return thongBaoRepository.findUnreadNotificationsForUser(nguoiNhanId, loaiNguoiNhan);
     }

@@ -53,6 +53,7 @@ import InvoiceManagement from './components/staff/orders/InvoiceManagement';
 import OrderDetailManagement from './components/staff/orders/OrderDetailManagement';
 import OrderDetail from './components/staff/orders/OrderDetail';
 import PaymentTransactionManagement from './components/staff/orders/PaymentTransactionManagement';
+import StaffNotifications from './components/staff/notifications/StaffNotifications';
 
 // Import shared components
 import Login from './components/shared/Login';
@@ -571,6 +572,10 @@ const App = () => {
               <Route path="inventory" element={<InventoryManagement />} />
               <Route path="inventory/alerts" element={<InventoryAlerts />} />
               <Route path="inventory/check" element={<InventoryManagement />} />
+              
+              {/* Staff Notifications */}
+              <Route path="notifications" element={<StaffNotifications />} />
+              
               {/* Support & Live Chat */}
               <Route path="support" element={<CustomerSupport />} />
               <Route path="livechat" element={<LiveChat />} />

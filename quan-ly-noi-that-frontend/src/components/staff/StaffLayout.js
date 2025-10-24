@@ -62,6 +62,9 @@ const StaffLayout = ({ userRole = 'staff', children }) => {
       { id: 'inventory', name: '📦 Tồn kho', component: InventoryManagement },
       { id: 'alerts', name: '⚠️ Cảnh báo', component: InventoryAlerts }
     ],
+    'Thông báo': [
+      { id: 'notifications', name: '🔔 Thông báo', component: null }
+    ],
     'Hỗ trợ': [
       { id: 'livechat', name: '💬 Live Chat', component: LiveChat }
     ]
@@ -147,6 +150,7 @@ const StaffLayout = ({ userRole = 'staff', children }) => {
       livechat: '/staff/livechat',
       inventory: '/staff/inventory',
       alerts: '/staff/inventory/alerts',
+      notifications: '/staff/notifications',
       shipping: '/staff/orders',
       suppliers: '/staff/suppliers'
     };
@@ -162,45 +166,10 @@ const StaffLayout = ({ userRole = 'staff', children }) => {
   const renderCurrentView = () => {
     // If a routed child component was passed as prop (e.g. <StaffLayout><InventoryManagement/></StaffLayout>), render it.
     if (children) return children;
-    // If this component is used as a parent route (nested routes) render the Outlet so nested elements display.
-    // React Router will render matching child routes (e.g. /staff/dashboard) inside the Outlet.
-    // We only render the Outlet when there are no explicit `children` props provided.
-    if (!children) return <Outlet />;
-
-    // Handle home page
-    if (currentView === 'home') {
-      return (
-        <div className='max-w-[1440px] mx-auto bg-white'>
-          <Header />
-          <Hero />
-          <Stats />
-          <Features />
-          <FeaturesSecond />
-          <NewItemsSlider />
-          <ProductSlider />
-          <TestimonialSlider />
-          <Newsletter />
-        </div>
-      );
-    }
-
-    // Check system views first
-    const systemView = systemViews.find(view => view.id === currentView);
-    if (systemView && systemView.component) {
-      const Component = systemView.component;
-      return <Component />;
-    }
-
-    // Check category views
-    for (const category in categories) {
-      const categoryView = categories[category].find(view => view.id === currentView);
-      if (categoryView) {
-        const Component = categoryView.component;
-        return <Component />;
-      }
-    }
     
-    return <StaffDashboard />;
+    // If this component is used as a parent route (nested routes) render the Outlet so nested elements display.
+    // React Router will render matching child routes (e.g. /staff/notifications) inside the Outlet.
+    return <Outlet />;
   };
 
   const handleLogout = () => {

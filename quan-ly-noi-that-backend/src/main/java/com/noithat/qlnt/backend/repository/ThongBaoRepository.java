@@ -39,6 +39,11 @@ public interface ThongBaoRepository extends JpaRepository<ThongBao, Integer> {
      */
     List<ThongBao> findByNguoiNhanIdAndNgayXoaIsNullOrderByNgayTaoDesc(Integer nguoiNhanId);
     
+       /**
+        * Lấy thông báo chưa đọc cho người nhận cụ thể (không bao gồm ALL)
+        */
+       List<ThongBao> findByNguoiNhanIdAndDaDocFalseAndNgayXoaIsNullOrderByNgayTaoDesc(Integer nguoiNhanId);
+    
     /**
      * Lấy thông báo theo loại người nhận (ALL, ADMIN, NHANVIEN)
      */
@@ -48,7 +53,9 @@ public interface ThongBaoRepository extends JpaRepository<ThongBao, Integer> {
      * Lấy thông báo cho người dùng (bao gồm cả thông báo cho ALL và cho user cụ thể)
      */
     @Query("SELECT t FROM ThongBao t WHERE t.ngayXoa IS NULL " +
-           "AND (t.loaiNguoiNhan = 'ALL' OR (t.loaiNguoiNhan = :loaiNguoiNhan AND t.nguoiNhanId = :nguoiNhanId)) " +
+           "AND (t.loaiNguoiNhan = 'ALL' " +
+           "OR (t.loaiNguoiNhan = :loaiNguoiNhan AND (t.nguoiNhanId = :nguoiNhanId OR t.nguoiNhanId IS NULL)) " +
+           "OR (t.loaiNguoiNhan IN ('ADMIN', 'USER') AND t.nguoiNhanId IS NULL)) " +
            "ORDER BY t.ngayTao DESC")
     List<ThongBao> findNotificationsForUser(@Param("nguoiNhanId") Integer nguoiNhanId, 
                                             @Param("loaiNguoiNhan") String loaiNguoiNhan);
@@ -57,7 +64,9 @@ public interface ThongBaoRepository extends JpaRepository<ThongBao, Integer> {
      * Lấy thông báo cho người dùng với phân trang
      */
     @Query("SELECT t FROM ThongBao t WHERE t.ngayXoa IS NULL " +
-           "AND (t.loaiNguoiNhan = 'ALL' OR (t.loaiNguoiNhan = :loaiNguoiNhan AND t.nguoiNhanId = :nguoiNhanId)) " +
+           "AND (t.loaiNguoiNhan = 'ALL' " +
+           "OR (t.loaiNguoiNhan = :loaiNguoiNhan AND (t.nguoiNhanId = :nguoiNhanId OR t.nguoiNhanId IS NULL)) " +
+           "OR (t.loaiNguoiNhan IN ('ADMIN', 'USER') AND t.nguoiNhanId IS NULL)) " +
            "ORDER BY t.ngayTao DESC")
     Page<ThongBao> findNotificationsForUser(@Param("nguoiNhanId") Integer nguoiNhanId, 
                                             @Param("loaiNguoiNhan") String loaiNguoiNhan,
@@ -144,6 +153,18 @@ public interface ThongBaoRepository extends JpaRepository<ThongBao, Integer> {
     int markAllAsReadForUser(@Param("nguoiNhanId") Integer nguoiNhanId, 
                              @Param("loaiNguoiNhan") String loaiNguoiNhan,
                              @Param("now") LocalDateTime now);
+    
+    /**
+     * Đánh dấu tất cả thông báo của đúng người dùng (không bao gồm ALL)
+     * Dùng riêng cho CUSTOMER để tránh đánh dấu nhầm thông báo broadcast
+     */
+    @Modifying
+    @Query("UPDATE ThongBao t SET t.daDoc = true, t.ngayCapNhat = :now " +
+           "WHERE t.ngayXoa IS NULL AND t.daDoc = false " +
+           "AND t.loaiNguoiNhan = :loaiNguoiNhan AND t.nguoiNhanId = :nguoiNhanId")
+    int markAllAsReadForExactUser(@Param("nguoiNhanId") Integer nguoiNhanId,
+                                  @Param("loaiNguoiNhan") String loaiNguoiNhan,
+                                  @Param("now") LocalDateTime now);
     
     /**
      * Soft delete thông báo cũ (quá 30 ngày)
