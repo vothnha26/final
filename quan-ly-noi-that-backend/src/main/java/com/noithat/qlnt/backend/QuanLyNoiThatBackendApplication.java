@@ -1,0 +1,12 @@
+package com.noithat.qlnt.backend;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class QuanLyNoiThatBackendApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(QuanLyNoiThatBackendApplication.class, args);
+    }
+}

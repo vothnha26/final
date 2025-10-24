@@ -1,0 +1,10 @@
+export { default as ProductManagement } from './ProductManagement';
+export { default as ProductVariantManagement } from './ProductVariantManagement';
+export { default as AttributeManagement } from './AttributeManagement';
+export { default as AttributeValueManagement } from './AttributeValueManagement';
+export { default as CategoryManagement } from './CategoryManagement';
+export { default as CollectionManagement } from './CollectionManagement';
+export { default as DiscountManagement } from './DiscountManagement';
+export { default as ImageManagement } from './ImageManagement';
+export { default as PromotionManagement } from './PromotionManagement';
+export { default as VoucherManagement } from './VoucherManagement';
